@@ -1,5 +1,10 @@
-#use
+- Install
+
+`composer require jiankechu/sign-in-with-apple`
+
 [Authenticating Users with Sign in with Apple](https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773)
+
+- use
 ```php
 <?php
 use ZJKe\SignInWithApple\IdentityToken;
