@@ -1,5 +1,5 @@
 #use
-
+[Authenticating Users with Sign in with Apple](https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773)
 ```php
 <?php
 use ZJKe\SignInWithApple\IdentityToken;
@@ -12,10 +12,14 @@ $token->decode($accessToken);
 if($cache instanceof \Psr\SimpleCache\CacheInterface){
 $token = new IdentityToken($cache);
 }
+//参考文档
+//https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/authenticating_users_with_sign_in_with_apple#3383773
 ``` 
 
 - uniapp获取jwt token
+[iOS 苹果授权登录（Sign in with Apple）](https://ask.dcloud.net.cn/article/36651)
 ```javascript
+//https://ask.dcloud.net.cn/article/36651
 uni.login({  
     provider: 'apple',  
     success: function (loginRes) {  
