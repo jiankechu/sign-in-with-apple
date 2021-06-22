@@ -3,11 +3,65 @@
 namespace ZJKe\SignInWithAppleTest;
 
 use Firebase\JWT\JWK;
+use Psr\SimpleCache\CacheInterface;
 use ZJKe\SignInWithApple\IdentityToken;
 use PHPUnit\Framework\TestCase;
 
 class IdentityTokenTest extends TestCase
 {
+
+    public function testDecodeUseCache()
+    {
+        $cacheClass = (new class implements CacheInterface {
+            protected $store = null;
+
+            public function get($key, $default = null)
+            {
+                return $this->store;
+            }
+
+            public function set($key, $value, $ttl = null)
+            {
+                return $this->store = $value;
+            }
+
+            public function delete($key)
+            {
+            }
+
+            public function clear()
+            {
+            }
+
+            public function getMultiple($keys, $default = null)
+            {
+            }
+
+            public function setMultiple($values, $ttl = null)
+            {
+            }
+
+            public function deleteMultiple($keys)
+            {
+            }
+
+            public function has($key)
+            {
+                return !empty($store);
+            }
+        });
+
+
+        $appleJwt = 'eyJraWQiOiJZdXlYb1kiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLnFpYW5rdS5hcHAuZ29vZHB1cmUiLCJleHAiOjE2MjQzODA4OTEsImlhdCI6MTYyNDI5NDQ5MSwic3ViIjoiMDAwNDAxLmQ4YWFkNzIxNzkxZjRjYWJhMTk1MDc0MjJiMDk0YzQ4LjA2NTIiLCJjX2hhc2giOiI4WmxOY0V4R01GdE9jeDlqNnhlV2V3IiwiZW1haWwiOiJKaWFua2UuekBmb3htYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjoidHJ1ZSIsImF1dGhfdGltZSI6MTYyNDI5NDQ5MSwibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.oHtlpkkR-QvO2LNubVdTLO54YO-syEtiG44IHsfduzbMtyaJkin6lUx90FOMRI8PmbNn1lWom5Kg2ZcvjdWqE1rz98bWoXqw2GM-mwbgDmhysJnzUe3wtvRkiD9eA9ORrxlO1BNKB9NnaIre7jzVZAQnStWPZCzaay6YQF-ALMgvMgZuEgiPL-Niv3lCPZh5c8Gi91y9bLv2YR5E5MTUPJCs_aa68es2VTd8gq15zuvfXjpwf8qzTAOOTH_-G6xsq14V0l-9suw1NMll_mc72k0Mt-HhSFVudwvTYrxUAkr-m5qiiZnuNOpBMik_9O__WxLUO-meit8KLQA4Z7fOwQ';
+        $token = new IdentityToken($cacheClass);
+        $token->decode($appleJwt);
+        $this->assertIsObject($token->getData());
+        $this->assertEquals('000401.d8aad721791f4caba19507422b094c48.0652', $token->sub);
+
+        $token->decode($appleJwt);
+
+
+    }
 
 
     public function testDecode()

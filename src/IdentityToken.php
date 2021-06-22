@@ -60,11 +60,20 @@ class IdentityToken
     {
         $curl = new Client();
         $resp = $curl->request('GET', 'https://appleid.apple.com/auth/keys');
-        $keys = json_decode($resp->getBody()->getContents(), 1);
-        $keys = JWK::parseKeySet($keys);
+        $keyStr = $resp->getBody()->getContents();
         if ($this->cache) {
-            $this->cache->set($this->cacheKey, $keys);
+            $this->cache->set($this->cacheKey, $keyStr);
         }
+        $keys = $this->parseKeySet($keyStr);
+        $this->publicKeys = $keys;
+        return $keys;
+    }
+
+    protected function parseKeySet(string $keyStr)
+    {
+        $keys = json_decode($keyStr, 1);
+        $keys = JWK::parseKeySet($keys);
+
         return $keys;
     }
 
@@ -74,11 +83,11 @@ class IdentityToken
             return $this->publicKeys;
         }
         if ($this->cache && $this->cache->has($this->cacheKey)) {
-            $keys = $this->cache->get($this->cacheKey);
+            $keyStr = $this->cache->get($this->cacheKey);
+            $keys = $this->parseKeySet($keyStr);
         } else {
             $keys = $this->reloadPublicKeys();
         }
-        $this->publicKeys = $keys;
         return $keys;
     }
 
@@ -107,9 +116,9 @@ class IdentityToken
     {
         $keys = $this->getPublicKeys();
         if ($this->cache) {
-            $this->checkOrUpdateKeys($idTokenString, $keys);
+            $keys = $this->checkOrUpdateKeys($idTokenString, $keys);
         }
-        $this->data = JWT::decode($idTokenString, $this->getPublicKeys(), ['RS256']);
+        $this->data = JWT::decode($idTokenString, $keys, ['RS256']);
 
         if (!is_null($nonce) && !empty($this->data->nonce_supported) && $this->data->nonce !== $nonce) {
             $this->data = null;
@@ -118,10 +127,8 @@ class IdentityToken
         return $this;
     }
 
-    protected function checkOrUpdateKeys($jwt, $keys)
+    protected function checkOrUpdateKeys($jwt, array $keys)
     {
-        $keys = JWT::jsonDecode($keys);
-        $keys['keys'];
         $tks = \explode('.', $jwt);
         if (\count($tks) != 3) {
             throw new UnexpectedValueException('Wrong number of segments');
